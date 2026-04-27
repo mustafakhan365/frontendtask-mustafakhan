@@ -46,14 +46,14 @@ function ConversationPanel({
           ? Array.from({ length: 8 }).map((_, idx) => (
               <div
                 key={`bubble-${idx}`}
-                className={`h-12 w-[64%] rounded-2xl bg-slate-200/70 animate-shimmer ${idx % 2 === 0 ? '' : 'self-end'}`}
+                className={`h-12 w-[64%] rounded-2xl bg-slate-200/70 animate-shimmer ${idx % 2 === 0 ? '' : 'justify-self-end'}`}
               />
             ))
           : messages.map((message) => (
               <div
                 key={message.id}
                 className={`max-w-[64%] rounded-2xl p-3 animate-fade-rise ${
-                  message.from === 'agent' ? 'self-end bg-violet-100' : 'self-start bg-slate-200'
+                  message.from === 'agent' ? 'justify-self-end bg-violet-100' : 'justify-self-start bg-slate-200'
                 }`}
               >
                 <p className="mb-1 text-sm leading-5 text-slate-900">{message.text}</p>

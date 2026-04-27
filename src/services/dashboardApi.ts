@@ -5,7 +5,7 @@ const hues = ['#7c83ff', '#f5cd55', '#7fa5ff', '#ffaf7a', '#f5d66a', '#f2a387', 
 
 export async function fetchInboxData(): Promise<InboxItem[]> {
   const [usersRes, todosRes] = await Promise.all([
-    fetch('https://dummyjson.com/users?limit=10'),
+    fetch('https://dummyjson.com/users'),
     fetch('https://jsonplaceholder.typicode.com/todos?_limit=10'),
   ])
   const usersJson: { users: Array<{ id: number; firstName: string; lastName: string }> } =

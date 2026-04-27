@@ -19,7 +19,9 @@ function App() {
   const [activeContactId, setActiveContactId] = useState<number | null>(null)
   const [searchValue, setSearchValue] = useState('')
   const [chatInput, setChatInput] = useState('')
+  const [activeMenuTab, setActiveMenuTab] = useState('Inbox')
   const [selected, setSelected] = useState<SectionKey>('inbox')
+  const handleTabChange = (tab: string) => setActiveMenuTab(tab)
   const [travellingTo, setTravellingTo] = useState<SectionKey | null>(null)
   const [panelReveal, setPanelReveal] = useState<Record<SectionKey, boolean>>({
     inbox: false,
@@ -155,9 +157,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col gap-2 px-3 py-3">
-      <TopNav />
+      <TopNav activeTab={activeMenuTab} onTabChange={handleTabChange} />
 
-      <main className="grid flex-1 gap-0 border border-slate-200 rounded-2xl overflow-hidden bg-white grid-cols-[190px_260px_minmax(0,1fr)_250px] xl:grid-cols-[170px_240px_minmax(0,1fr)_238px] lg:grid-cols-[180px_250px_minmax(0,1fr)_250px] md:grid-cols-1">
+      <main className="grid flex-1 gap-0 border border-slate-200 rounded-2xl overflow-hidden bg-white grid-cols-[220px_260px_minmax(0,1fr)_250px] xl:grid-cols-[210px_250px_minmax(0,1fr)_238px] lg:grid-cols-[200px_240px_minmax(0,1fr)_250px] md:grid-cols-1">
         <LeftSidebar
           panelVisible={panelReveal.inbox}
           activeFilter={activeFilter}

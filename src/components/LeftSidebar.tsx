@@ -102,7 +102,7 @@ function LeftSidebar({
                   >
                     {item.name[0]}
                   </div>
-                  <button type="button" onClick={() => onOpenContact(item.id)} className="flex w-full items-center justify-between gap-2 p-0 text-left">
+                  <button type="button" onClick={() => onOpenContact(item.id)} className="flex w-full items-center justify-between gap-2 p-0 text-left ms-2">
                     <span>{item.name}</span>
                     <small className="text-[0.65rem] text-slate-500">{Math.max(1, item.unread)}</small>
                   </button>
