@@ -8,6 +8,12 @@ After downloading repository run locally through following commands:
 
 For Production run npm run build
 
+# APIs used
+1. https://dummyjson.com/users
+2. https://jsonplaceholder.typicode.com/todos
+3. https://jsonplaceholder.typicode.com/posts
+4. https://jsonplaceholder.typicode.com/comments
+
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
