@@ -13,7 +13,6 @@ import {
   type NavFilter,
   type SectionKey,
 } from './types/dashboard'
-import './App.css'
 
 function App() {
   const [activeFilter, setActiveFilter] = useState<NavFilter>('my-inbox')
@@ -155,10 +154,10 @@ function App() {
   }
 
   return (
-    <div className="dashboard-shell">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col gap-2 px-3 py-3">
       <TopNav />
 
-      <main className={`dashboard-main ${anyLoading ? 'is-loading' : ''}`}>
+      <main className="grid flex-1 gap-0 border border-slate-200 rounded-2xl overflow-hidden bg-white grid-cols-[190px_260px_minmax(0,1fr)_250px] xl:grid-cols-[170px_240px_minmax(0,1fr)_238px] lg:grid-cols-[180px_250px_minmax(0,1fr)_250px] md:grid-cols-1">
         <LeftSidebar
           panelVisible={panelReveal.inbox}
           activeFilter={activeFilter}

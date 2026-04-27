@@ -19,73 +19,102 @@ function LeftSidebar({
   onFilterChange,
   onOpenContact,
 }: LeftSidebarProps) {
+  const optionClasses = (active: boolean) =>
+    `flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2 text-left text-sm text-slate-900 ${
+      active ? 'bg-slate-100' : 'hover:bg-slate-50'
+    }`
+
   return (
-    <aside className={`left-nav ${panelVisible ? 'pop-in' : ''}`}>
-      <h2 className="nav-title">Inbox</h2>
-      <ul className="nav-list">
-        <li className={activeFilter === 'my-inbox' ? 'active' : ''}>
-          <button type="button" onClick={() => onFilterChange('my-inbox')}>
-            <span>
-              <i className="dot-icon">✉</i>My Inbox
-            </span>
-          </button>
-        </li>
-        <li className={activeFilter === 'all' ? 'active' : ''}>
-          <button type="button" onClick={() => onFilterChange('all')}>
-            <span>
-              <i className="dot-icon">👥</i>All
-            </span>
-            <small>28</small>
-          </button>
-        </li>
-        <li className={activeFilter === 'unassigned' ? 'active' : ''}>
-          <button type="button" onClick={() => onFilterChange('unassigned')}>
-            <span>
-              <i className="dot-icon">◉</i>Unassigned
-            </span>
-            <small>5</small>
-          </button>
-        </li>
-      </ul>
+    <aside className={`overflow-hidden border-r border-slate-200 bg-white ${panelVisible ? 'animate-fade-rise' : ''}`}>
+      <div className="p-3">
+        <h2 className="mb-3 text-[18px] font-semibold tracking-tight text-slate-900">Inbox</h2>
+        <ul className="grid gap-2">
+          <li>
+            <button type="button" className={optionClasses(activeFilter === 'my-inbox')} onClick={() => onFilterChange('my-inbox')}>
+              <span className="inline-flex items-center gap-2 text-sm">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[0.55rem] opacity-80">✉</span>
+                My Inbox
+              </span>
+            </button>
+          </li>
+          <li>
+            <button type="button" className={optionClasses(activeFilter === 'all')} onClick={() => onFilterChange('all')}>
+              <span className="inline-flex items-center gap-2 text-sm">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[0.55rem] opacity-80">👥</span>
+                All
+              </span>
+              <small className="text-[0.65rem] text-slate-500">28</small>
+            </button>
+          </li>
+          <li>
+            <button type="button" className={optionClasses(activeFilter === 'unassigned')} onClick={() => onFilterChange('unassigned')}>
+              <span className="inline-flex items-center gap-2 text-sm">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[0.55rem] opacity-80">◉</span>
+                Unassigned
+              </span>
+              <small className="text-[0.65rem] text-slate-500">5</small>
+            </button>
+          </li>
+        </ul>
+      </div>
 
-      <p className="nav-section">Teams</p>
-      <ul className="nav-list subtle">
-        {teamItems.map((item) => {
-          const value = item.label === 'Sales' ? 'sales' : 'support'
-          return (
-            <li key={item.label} className={activeFilter === value ? 'active' : ''}>
-              <button type="button" onClick={() => onFilterChange(value)}>
-                <span>
-                  <i className="dot-icon">◎</i>
-                  {item.label}
-                </span>
-                <small>{item.count}</small>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-
-      <p className="nav-section">Users</p>
-      <ul className="user-mini-list">
-        {!statesInboxReady
-          ? Array.from({ length: 7 }).map((_, idx) => (
-              <li className="skeleton-line mini" key={`mini-user-${idx}`} />
-            ))
-          : filteredInbox.slice(0, 8).map((item) => (
-              <li key={`user-${item.id}`} className={activeContactId === item.id ? 'active' : ''}>
-                <div className="avatar mini" style={{ background: `${item.color}33`, color: item.color }}>
-                  {item.name[0]}
-                </div>
-                <button type="button" onClick={() => onOpenContact(item.id)} className="user-mini-button">
-                  <span>{item.name}</span>
-                  <small>{Math.max(1, item.unread)}</small>
+      <div className="border-t border-slate-200 p-3">
+        <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Teams</p>
+        <ul className="grid gap-2">
+          {teamItems.map((item) => {
+            const value = item.label === 'Sales' ? 'sales' : 'support'
+            return (
+              <li key={item.label}>
+                <button
+                  type="button"
+                  className={optionClasses(activeFilter === value)}
+                  onClick={() => onFilterChange(value)}
+                >
+                  <span className="inline-flex items-center gap-2 text-sm">
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[0.65rem] opacity-80">◎</span>
+                    {item.label}
+                  </span>
+                  <small className="text-[0.65rem] text-slate-500">{item.count}</small>
                 </button>
               </li>
-            ))}
-      </ul>
-      <p className="nav-section">Channels</p>
-      <div className="channel-pill">Fit4Life</div>
+            )
+          })}
+        </ul>
+      </div>
+
+      <div className="border-t border-slate-200 p-3">
+        <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Users</p>
+        <ul className="grid gap-2">
+          {!statesInboxReady
+            ? Array.from({ length: 7 }).map((_, idx) => (
+                <li key={`mini-user-${idx}`} className="h-6 rounded-2xl bg-slate-200/70 animate-shimmer" />
+              ))
+            : filteredInbox.slice(0, 8).map((item) => (
+                <li
+                  key={`user-${item.id}`}
+                  className={`grid grid-cols-[20px_1fr_auto] items-center gap-2 rounded-2xl px-3 py-2 text-xs text-slate-900 ${
+                    activeContactId === item.id ? 'bg-slate-100' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div
+                    className="grid h-7 w-7 place-items-center rounded-full text-xs font-semibold"
+                    style={{ background: `${item.color}33`, color: item.color }}
+                  >
+                    {item.name[0]}
+                  </div>
+                  <button type="button" onClick={() => onOpenContact(item.id)} className="flex w-full items-center justify-between gap-2 p-0 text-left">
+                    <span>{item.name}</span>
+                    <small className="text-[0.65rem] text-slate-500">{Math.max(1, item.unread)}</small>
+                  </button>
+                </li>
+              ))}
+        </ul>
+      </div>
+
+      <div className="border-t border-slate-200 p-3">
+        <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Channels</p>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">Fit4Life</div>
+      </div>
     </aside>
   )
 }

@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   line-height: 1.45;
@@ -19,4 +21,135 @@ body,
   margin: 0;
   width: 100%;
   min-height: 100%;
+}
+
+@layer utilities {
+  .hexagon {
+    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%);
+  }
+
+  .animate-fade-rise {
+    animation: fadeRise 360ms ease both;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, rgba(226, 230, 236, 0.8) 25%, rgba(229, 231, 235, 1) 50%, rgba(226, 230, 236, 0.8) 75%);
+    background-size: 220% 100%;
+    animation: shimmer 1.2s linear infinite;
+  }
+
+  .busy {
+    position: relative;
+  }
+
+  .busy::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%);
+    border: 2px solid rgba(96, 165, 250, 0.55);
+    animation: spinOutline 2.5s linear infinite;
+  }
+
+  .animate-outline-pulse {
+    animation: outlinePulse 1.5s ease infinite;
+  }
+
+  .travelling-icon {
+    position: absolute;
+    left: 50%;
+    bottom: 52px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: grid;
+    place-content: center;
+    background: linear-gradient(160deg, #c4b5fd, #60a5fa);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .move-inbox {
+    animation: flyInbox 700ms ease forwards;
+  }
+
+  .move-chat {
+    animation: flyChat 700ms ease forwards;
+  }
+
+  .move-details {
+    animation: flyDetails 700ms ease forwards;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes fadeRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flyInbox {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(-50% - 540px)) translateY(-320px);
+    opacity: 0;
+  }
+}
+
+@keyframes flyChat {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(-50% - 80px)) translateY(-300px);
+    opacity: 0;
+  }
+}
+
+@keyframes flyDetails {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(-50% + 500px)) translateY(-320px);
+    opacity: 0;
+  }
+}
+
+@keyframes outlinePulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 20px rgba(96, 165, 250, 0.35);
+  }
+  50% {
+    box-shadow: 0 10px 24px rgba(167, 139, 250, 0.45);
+  }
+}
+
+@keyframes spinOutline {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
