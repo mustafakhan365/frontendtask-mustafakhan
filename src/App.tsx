@@ -1,121 +1,211 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useMemo, useState } from 'react'
+import ChatListPanel from './components/ChatListPanel'
+import ConversationPanel from './components/ConversationPanel'
+import DetailsPanel from './components/DetailsPanel'
+import HoneycombDock from './components/HoneycombDock'
+import LeftSidebar from './components/LeftSidebar'
+import TopNav from './components/TopNav'
+import { fetchContactDetails, fetchConversationByContact, fetchInboxData } from './services/dashboardApi'
+import {
+  sectionOrder,
+  type DashboardData,
+  type LoadState,
+  type NavFilter,
+  type SectionKey,
+} from './types/dashboard'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeFilter, setActiveFilter] = useState<NavFilter>('my-inbox')
+  const [activeContactId, setActiveContactId] = useState<number | null>(null)
+  const [searchValue, setSearchValue] = useState('')
+  const [chatInput, setChatInput] = useState('')
+  const [selected, setSelected] = useState<SectionKey>('inbox')
+  const [travellingTo, setTravellingTo] = useState<SectionKey | null>(null)
+  const [panelReveal, setPanelReveal] = useState<Record<SectionKey, boolean>>({
+    inbox: false,
+    chat: false,
+    details: false,
+  })
+  const [states, setStates] = useState<Record<SectionKey, LoadState>>({
+    inbox: 'loading',
+    chat: 'loading',
+    details: 'loading',
+  })
+  const [data, setData] = useState<DashboardData>({
+    inbox: [],
+    chat: [],
+    details: null,
+  })
+
+  const anyLoading = useMemo(
+    () => sectionOrder.some((key) => states[key] !== 'ready'),
+    [states],
+  )
+
+  const filteredInbox = useMemo(() => {
+    const source = data.inbox
+    if (!source.length) return source
+    if (activeFilter === 'all') return source
+    if (activeFilter === 'unassigned') return source.filter((item) => item.unread > 0)
+    if (activeFilter === 'sales') return source.filter((_, idx) => idx % 2 === 0)
+    if (activeFilter === 'support') return source.filter((_, idx) => idx % 2 === 1)
+    return source.slice(0, 8)
+  }, [data.inbox, activeFilter])
+
+  const searchableList = useMemo(() => {
+    const query = searchValue.trim().toLowerCase()
+    if (!query) return filteredInbox
+    return filteredInbox.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        item.preview.toLowerCase().includes(query),
+    )
+  }, [filteredInbox, searchValue])
+
+  const fetchSection = async (key: SectionKey) => {
+    setStates((prev) => ({ ...prev, [key]: 'loading' }))
+    try {
+      if (key === 'inbox') {
+        const inbox = await fetchInboxData()
+        setData((prev) => ({ ...prev, inbox }))
+      }
+
+      if (key === 'chat') {
+        const chat = await fetchConversationByContact(1)
+        setData((prev) => ({ ...prev, chat }))
+      }
+
+      if (key === 'details') {
+        const details = await fetchContactDetails(1)
+        if (details) {
+          setData((prev) => ({ ...prev, details }))
+        }
+      }
+
+      setStates((prev) => ({ ...prev, [key]: 'ready' }))
+      setPanelReveal((prev) => ({ ...prev, [key]: true }))
+    } catch {
+      setStates((prev) => ({ ...prev, [key]: 'ready' }))
+      setPanelReveal((prev) => ({ ...prev, [key]: true }))
+    }
+  }
+
+  const openContact = async (contactId: number) => {
+    setActiveContactId(contactId)
+    setStates((prev) => ({ ...prev, chat: 'loading', details: 'loading' }))
+    const [chat, details] = await Promise.all([
+      fetchConversationByContact(contactId),
+      fetchContactDetails(contactId),
+    ])
+    setData((prev) => ({
+      ...prev,
+      chat,
+      details: details ?? prev.details,
+    }))
+    setStates((prev) => ({ ...prev, chat: 'ready', details: 'ready' }))
+  }
+
+  const onSendMessage = () => {
+    const value = chatInput.trim()
+    if (!value) return
+    setData((prev) => ({
+      ...prev,
+      chat: [
+        ...prev.chat,
+        {
+          id: Date.now(),
+          from: 'agent',
+          text: value,
+          time: new Date().toTimeString().slice(0, 5),
+        },
+      ],
+    }))
+    setChatInput('')
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    const withDelay = async (key: SectionKey, delayMs: number) => {
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+      if (cancelled) return
+      await fetchSection(key)
+    }
+
+    withDelay('inbox', 350)
+    withDelay('chat', 700)
+    withDelay('details', 1050)
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const onSelectHoneycomb = (key: SectionKey) => {
+    setSelected(key)
+    setTravellingTo(key)
+    setTimeout(() => {
+      setTravellingTo(null)
+      setPanelReveal((prev) => ({ ...prev, [key]: true }))
+    }, 700)
+    if (states[key] !== 'ready') {
+      fetchSection(key)
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="dashboard-shell">
+      <TopNav />
 
-      <div className="ticks"></div>
+      <main className={`dashboard-main ${anyLoading ? 'is-loading' : ''}`}>
+        <LeftSidebar
+          panelVisible={panelReveal.inbox}
+          activeFilter={activeFilter}
+          statesInboxReady={states.inbox === 'ready'}
+          filteredInbox={filteredInbox}
+          activeContactId={activeContactId}
+          onFilterChange={setActiveFilter}
+          onOpenContact={openContact}
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <ChatListPanel
+          panelVisible={panelReveal.chat}
+          isLoading={states.chat === 'loading'}
+          activeContactId={activeContactId}
+          searchValue={searchValue}
+          list={searchableList}
+          onSearchChange={setSearchValue}
+          onOpenContact={openContact}
+        />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <ConversationPanel
+          panelVisible={panelReveal.chat}
+          isLoading={states.chat === 'loading'}
+          activeContactId={activeContactId}
+          searchableList={searchableList}
+          messages={data.chat}
+          chatInput={chatInput}
+          onChatInputChange={setChatInput}
+          onSendMessage={onSendMessage}
+        />
+
+        <DetailsPanel
+          panelVisible={panelReveal.details}
+          isLoading={states.details === 'loading'}
+          details={data.details}
+        />
+      </main>
+
+      <HoneycombDock
+        anyLoading={anyLoading}
+        selected={selected}
+        travellingTo={travellingTo}
+        states={states}
+        onSelect={onSelectHoneycomb}
+        sectionOrder={sectionOrder}
+      />
+    </div>
   )
 }
 
